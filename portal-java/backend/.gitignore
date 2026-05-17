@@ -1,0 +1,17 @@
+target/
+*.log
+.DS_Store
+
+# Local H2 database files. The SeedRunner repopulates an empty DB on first boot,
+# so we never want these checked in.
+data/
+*.mv.db
+*.trace.db
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/

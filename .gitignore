@@ -1,0 +1,8 @@
+# Portable toolchain used to verify builds in this environment.
+# Not part of the project — re-installed on each machine.
+.tools/
+
+# OS junk
+.DS_Store
+
+# Per-project ignores live inside each project's own .gitignore.

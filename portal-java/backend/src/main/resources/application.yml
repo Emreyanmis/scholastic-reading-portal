@@ -1,0 +1,45 @@
+server:
+  port: 8080
+  # Hosted under a context path so the frontend dev proxy ("/api") is unambiguous.
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: reading-portal
+
+  datasource:
+    # H2 in file mode — embeddable, zero-config, survives restarts.
+    url: jdbc:h2:file:./data/portal;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: false
+
+portal:
+  session:
+    # 7 days. The session secret is REQUIRED in non-dev profiles; in dev we
+    # fall back to a hard-coded value (see SessionService).
+    max-age-seconds: 604800
+    secret: ${PORTAL_SESSION_SECRET:dev-only-insecure-secret}
+  cors:
+    # Comma-separated origins allowed to send cookies. Vite default + the
+    # frontend's production origin should be added in env.
+    allowed-origins: ${PORTAL_CORS_ORIGINS:http://localhost:5173,http://localhost:4173}
+
+logging:
+  level:
+    org.springframework: INFO
+    org.hibernate.SQL: WARN
+    com.scholastic.portal: INFO
