@@ -1,0 +1,35 @@
+# Render Blueprint — one-click deploy for the Spring Boot backend.
+#
+# To use:
+#   1. Push this repo to GitHub
+#   2. On https://dashboard.render.com  ->  New  ->  Blueprint
+#   3. Connect this repo. Render reads this file, provisions the service,
+#      and asks you to fill in the secrets (PORTAL_SESSION_SECRET, etc).
+#
+# The free tier sleeps after 15 minutes of inactivity. First request after
+# sleep takes ~30 seconds; subsequent requests are fast.
+
+services:
+  - type: web
+    name: reading-portal-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./portal-java/backend/Dockerfile
+    dockerContext: ./portal-java/backend
+    healthCheckPath: /api/auth/me
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORTAL_SESSION_SECRET
+        generateValue: true
+      - key: PORTAL_COOKIE_SECURE
+        value: "true"
+      - key: PORTAL_COOKIE_SAMESITE
+        value: "None"
+      # Frontend origins allowed to send cookies. Add the Vercel URL here
+      # AFTER the frontend has been deployed.
+      - key: PORTAL_CORS_ORIGINS
+        value: "https://reading-portal-frontend.vercel.app"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=75"

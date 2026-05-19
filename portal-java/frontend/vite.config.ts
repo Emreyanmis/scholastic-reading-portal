@@ -15,6 +15,15 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: backend,
           changeOrigin: true,
+          // The browser sees a same-origin request (to the Vite host), but
+          // by default Vite forwards the original Origin header on to the
+          // backend, which then runs CORS against it. Strip it so the
+          // backend treats this like a normal server-to-server call.
+          configure: (proxy) => {
+            proxy.on("proxyReq", (proxyReq) => {
+              proxyReq.removeHeader("origin");
+            });
+          },
         },
       },
     },

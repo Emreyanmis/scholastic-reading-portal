@@ -72,11 +72,20 @@ npm run dev                # http://localhost:5173
 
 Both variants ship with the same demo accounts: `teacher@demo.com / teacher123`, `alex@demo.com / student123`, `jordan@demo.com / student123`, `sam@demo.com / student123`.
 
+## Deploying
+
+Free-tier recipes for both variants live in **[DEPLOY.md](./DEPLOY.md)**:
+
+- **Recipe A — Next.js → Vercel + Neon Postgres** (recommended for fastest demo; ~10 min, no cold starts)
+- **Recipe B — Spring Boot + React → Render + Vercel** (matches Scholastic's stated stack; ~15 min, Render free sleeps after 15 min idle)
+
+Both cost $0.
+
 ## Deliverables
 
-- **GitHub repository.** This repo. A clean initial commit per variant plus the merge into a single repo.
-- **Live deployed URL with credentials.** See per-variant READMEs for deployment paths (Next.js → Vercel/Render; Spring Boot + React → Render/Fly.io + Vercel/Netlify).
-- **Written explanation.** Each variant's README covers what's implemented, key architectural decisions, tradeoffs/assumptions, and what I'd improve with more time.
+- **GitHub repository.** This repo (push from `/Users/emreyanmis/Documents/scholastic` per the steps in `DEPLOY.md`).
+- **Live deployed URL with credentials.** Whichever recipe you ran; demo accounts are seeded automatically.
+- **Written explanation.** Each variant's README covers what's implemented, key architectural decisions, tradeoffs/assumptions, and what to improve with more time.
 
 ## API parity at a glance
 

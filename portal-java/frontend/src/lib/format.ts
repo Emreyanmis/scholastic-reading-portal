@@ -15,9 +15,10 @@ export function statusLabel(s: AssignmentStatus): string {
 }
 
 export function statusClasses(s: AssignmentStatus): string {
+  // Badges include a small dot indicator via ::before so they read at a glance.
   return s === "NOT_STARTED"
-    ? "bg-zinc-100 text-zinc-700"
+    ? "bg-stone-100 text-stone-700 ring-1 ring-stone-200"
     : s === "IN_PROGRESS"
-    ? "bg-amber-100 text-amber-800"
-    : "bg-emerald-100 text-emerald-800";
+    ? "bg-sunny-100 text-amber-800 ring-1 ring-amber-200"
+    : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200";
 }

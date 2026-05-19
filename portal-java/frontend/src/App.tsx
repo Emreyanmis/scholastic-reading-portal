@@ -10,7 +10,7 @@ import type { Role } from "./lib/api";
 function RequireRole({ role, children }: { role: Role; children: JSX.Element }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <div className="p-8 text-zinc-500">Loading…</div>;
+  if (loading) return <div className="p-8 text-stone-500">Loading…</div>;
   if (!user) return <Navigate to="/" state={{ from: location }} replace />;
   if (user.role !== role) return <Navigate to={user.role === "TEACHER" ? "/teacher" : "/student"} replace />;
   return children;
@@ -28,7 +28,7 @@ export default function App() {
             path="/"
             element={
               loading ? (
-                <div className="p-8 text-zinc-500">Loading…</div>
+                <div className="p-8 text-stone-500">Loading…</div>
               ) : user ? (
                 <Navigate to={user.role === "TEACHER" ? "/teacher" : "/student"} replace />
               ) : (

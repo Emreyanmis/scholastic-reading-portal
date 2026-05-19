@@ -1,0 +1,16 @@
+spring:
+  # Render's free tier doesn't include persistent disks, so we run H2 in
+  # in-memory mode on production. SeedRunner repopulates demo data on every
+  # boot, which is fine for a take-home demo. For a real product this would
+  # be a managed Postgres (set spring.datasource.url accordingly and add the
+  # postgresql driver to pom.xml).
+  datasource:
+    url: jdbc:h2:mem:portal;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+logging:
+  level:
+    org.springframework: INFO
+    com.scholastic.portal: INFO

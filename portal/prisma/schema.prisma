@@ -16,10 +16,10 @@ generator client {
 }
 
 datasource db {
-  // SQLite is used for the demo (zero-config, embeddable). The schema is
-  // intentionally portable to Postgres — switching just requires changing
-  // `provider` and the DATABASE_URL.
-  provider = "sqlite"
+  // PostgreSQL is used in production (deploys to Vercel + Neon). For purely
+  // local dev you can still point DATABASE_URL at a Neon free-tier branch —
+  // the schema is otherwise provider-agnostic.
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

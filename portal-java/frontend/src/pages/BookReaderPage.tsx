@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, AssignmentStatus, BookFull, StudentDto, TeacherSummary } from "../lib/api";
 import { BookReader } from "../components/BookReader";
+import { IconArrowLeft } from "../components/icons";
 
 type AssignmentDetail = {
   id: string;
@@ -33,18 +34,16 @@ export function BookReaderPage() {
   if (error) {
     return (
       <div className="space-y-3">
-        <Link to="/student" className="text-sm text-zinc-600 hover:text-zinc-900">← Back to my reading</Link>
-        <div className="text-brand-600">{error}</div>
+        <BackLink />
+        <div className="card p-6 text-brand-700 bg-brand-50">{error}</div>
       </div>
     );
   }
-  if (!detail) return <div className="text-zinc-500">Loading…</div>;
+  if (!detail) return <div className="text-stone-500">Loading…</div>;
 
   return (
-    <div className="space-y-4">
-      <Link to="/student" className="text-sm text-zinc-600 hover:text-zinc-900">
-        ← Back to my reading
-      </Link>
+    <div className="space-y-4 animate-fade-in">
+      <BackLink />
       <BookReader
         initial={{
           id: detail.id,
@@ -58,5 +57,16 @@ export function BookReaderPage() {
         onChange={(patch) => setDetail((prev) => (prev ? { ...prev, ...patch } : prev))}
       />
     </div>
+  );
+}
+
+function BackLink() {
+  return (
+    <Link
+      to="/student"
+      className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-600 hover:text-stone-900"
+    >
+      <IconArrowLeft size={14} /> Back to my reading
+    </Link>
   );
 }

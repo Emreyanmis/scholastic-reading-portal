@@ -84,7 +84,12 @@ const STUDENTS = [
 ];
 
 async function main() {
-  console.log("Seeding database...");
+  const existing = await prisma.user.count();
+  if (existing > 0 && process.env.SEED_FORCE !== "1") {
+    console.log(`Seed: database already has ${existing} users; skipping. Set SEED_FORCE=1 to wipe and reseed.`);
+    return;
+  }
+  console.log("Seeding database…");
 
   await prisma.readingSession.deleteMany();
   await prisma.assignment.deleteMany();
