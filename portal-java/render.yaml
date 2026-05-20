@@ -17,7 +17,7 @@ services:
     region: oregon
     dockerfilePath: ./portal-java/backend/Dockerfile
     dockerContext: ./portal-java/backend
-    healthCheckPath: /api/auth/me
+    healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod

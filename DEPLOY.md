@@ -80,7 +80,7 @@ That's it. Total $0 forever — Vercel hobby tier + Neon free tier.
 4. Render auto-generates `PORTAL_SESSION_SECRET`. You can leave `PORTAL_CORS_ORIGINS` as the placeholder for now — we'll update it after Vercel.
 5. Click **Apply**. First Docker build takes ~4 minutes. Render gives you a public URL like `https://reading-portal-backend.onrender.com`.
 
-Verify with: `curl https://reading-portal-backend.onrender.com/api/auth/me` → should return `{"error":"Not authenticated"}` (401), proving it's alive.
+Verify with: `curl https://reading-portal-backend.onrender.com/api/health` → should return `{"status":"ok"}` (200).
 
 ### 2. Deploy the frontend to Vercel  (~3 minutes)
 
