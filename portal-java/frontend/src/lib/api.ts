@@ -6,7 +6,8 @@
 // I deliberately did NOT pull in axios or react-query for a focused demo —
 // the surface is small enough that a 40-line wrapper is clearer.
 
-const BASE = (import.meta.env.VITE_API_BASE as string | undefined) || "";
+// Strip trailing slash so BASE + "/api/..." never becomes "//api/..." (Spring 500s on that).
+const BASE = ((import.meta.env.VITE_API_BASE as string | undefined) || "").replace(/\/$/, "");
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) {

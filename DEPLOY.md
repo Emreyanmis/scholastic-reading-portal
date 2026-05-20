@@ -89,7 +89,7 @@ Verify with: `curl https://reading-portal-backend.onrender.com/api/health` → s
 3. **Root directory:** set it to `portal-java/frontend`
 4. Framework should auto-detect as **Vite**
 5. Environment Variables:
-   - `VITE_API_BASE` — set this to your Render backend URL: `https://reading-portal-backend.onrender.com`
+   - `VITE_API_BASE` — your Render backend URL **with no trailing slash**, e.g. `https://reading-portal-backend.onrender.com`
 6. Click **Deploy**. Vercel gives you a URL like `https://reading-portal-frontend.vercel.app`.
 
 ### 3. Tell the backend about the frontend  (~1 minute)
