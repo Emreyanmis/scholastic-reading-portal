@@ -2,7 +2,7 @@
 
 A Teacher Reading Assignment Portal: teachers assign books to students with a due date and track progress; students open the assigned book in an in-app reader, log minutes read, and update their assignment status.
 
-This is the Spring Boot + React variant of the project. Architecturally it's two services that share the same data model and API contract as the single-app Next.js version in `../portal/`.
+Spring Boot + React implementation of the Reading Portal: a REST API backend and a Vite/React SPA frontend that talk over JSON and cookie-based sessions.
 
 ## Layout
 
@@ -77,12 +77,11 @@ All routes return JSON. Errors come back as `{ "error": "..." }`. Auth-protected
 | GET    | `/api/assignments/{id}`                   | owner stu/teach. | Detail with full book content (reader) |
 | PATCH  | `/api/assignments/{id}/status`            | owner student    | Update assignment status               |
 | POST   | `/api/assignments/{id}/sessions`          | owner student    | Log minutes; bumps `minutesRead`       |
-
-The wire format is identical to the Next.js version's API, so the same React UI works against either backend.
+| GET    | `/api/health`                             | anyone           | Health check (Render deploy probe)     |
 
 ## Key decisions
 
-**Two services, one API contract.** The Spring Boot service is the system of record; React is a client that talks to it. Each can be deployed independently. The wire format matches the Next.js version exactly so we can swap backends without touching the frontend.
+**Two services, one API contract.** The Spring Boot service is the system of record; React is a client that talks to it. Each can be deployed independently (Render + Vercel, or both locally).
 
 **Hand-rolled HMAC-signed cookie sessions in `auth/SessionService.java`.** I wanted real auth (BCrypt-hashed passwords, signed sessions) without taking on Spring Security's configuration cost for a 4-hour exercise. The class is ~70 lines and uses `MessageDigest.isEqual` for constant-time comparison. Cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` in production. To migrate to Spring Security later: keep the cookie shape, swap `SessionService.verify` for a `SecurityFilterChain` + `RememberMeServices` and remove the filter.
 

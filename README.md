@@ -2,26 +2,24 @@
 
 A lightweight Teacher Reading Assignment Portal: teachers assign books to students with a due date and track progress; students open the assigned book in an in-app reader, log minutes read, and update their assignment status.
 
-I shipped **two implementations** that share the same data model, the same API contract, and (very nearly) the same UI. Pick whichever you want to review first — the design decisions and behaviour are intentionally the same.
+**Stack:** Spring Boot 3.3 (Java 21) backend + React 18 (Vite, TypeScript, Tailwind) frontend.
 
-| Variant | Path | Stack | Best for |
-| ------- | ---- | ----- | -------- |
-| **Next.js full-stack** | [`portal/`](./portal) | Next.js 14 (App Router) + TypeScript + Tailwind + Prisma + SQLite | Single deployable artifact, fastest path to a demo |
-| **Spring Boot + React** | [`reading-portal/`](./reading-portal) | Spring Boot 3.3 + JPA + H2 (backend) · Vite + React + TS + Tailwind (frontend) | Matches Scholastic's stated stack (Java backend + React frontend), two-service deployment |
+**Repository:** https://github.com/Emreyanmis/scholastic-reading-portal
 
-Each variant has its own README with setup, decisions, tradeoffs, and what I'd improve with more time.
+## Repository layout
 
-## Why two?
+```
+scholastic-reading-portal/
+├── reading-portal/
+│   ├── backend/            Spring Boot API (JPA, H2, REST)
+│   ├── frontend/           React SPA (Scholastic wordmark)
+│   ├── render.yaml         Render Blueprint (backend)
+│   └── README.md           Architecture notes & API reference
+├── DEPLOY.md               Free-tier deploy (Render + Vercel)
+└── vercel.json             Optional Vercel config when importing from repo root
+```
 
-The brief reads:
-
-> You may use any language or framework. We primarily work in Java (backend) and React (frontend), so feel free to use those if comfortable — **but this is not required.**
-
-I built the **Next.js variant first** because it lets a single artifact cover frontend, API, and data layer — that's a faster path to a working demo within a 4-hour budget, and the architecture choice is itself a defensible interview talking point.
-
-I then built the **Spring Boot + React variant** so there's a version that maps cleanly to how Scholastic actually works day-to-day. The schema, the API surface, the auth approach, and the UI are deliberately the same — what changes is the implementation language and the deployment topology.
-
-## What's implemented (identical in both variants)
+## What's implemented
 
 **Teacher**
 - Email/password sign-in
@@ -30,37 +28,24 @@ I then built the **Spring Boot + React variant** so there's a version that maps 
 - Filterable assignment table with overdue indicators
 
 **Student**
-- Sees only the assignments belonging to them
-- Status dropdown on each assignment — same control on the card and inside the reader
-- In-app book reader with two ways to log time:
-  - **Start / Stop timer** that ticks in the browser and POSTs the elapsed minutes when stopped
-  - **Manual entry** for offline reading
-- Status auto-advances to "In Progress" the first time a student logs reading time
-- "Mark as completed" button stamps `completedAt`
+- Sees only their own assignments
+- Status dropdown on each assignment (dashboard and in-app reader)
+- In-app book reader with a **Start / Stop timer** and **manual minute entry**
+- Status auto-advances to In Progress on first logged reading time
+- Mark as completed stamps `completedAt`
 
 **Cross-cutting**
-- Real email/password auth (BCrypt passwords + HMAC-signed cookie sessions)
-- Role-gated API: students can't hit teacher endpoints, students can't touch other students' assignments
-- Materialized `minutesRead` on `Assignment` + append-only `ReadingSession` log for future per-session reporting
-- Seed runner that creates one teacher, three students, six books, and two starter assignments
+- BCrypt passwords + HMAC-signed cookie sessions (`rp_session`)
+- Role-gated REST API (401/403 with `{ "error": "..." }` JSON)
+- Materialized `minutesRead` on `Assignment` + append-only `ReadingSession` log
+- Idempotent seed data: one teacher, three students, six books, two starter assignments
 
-## Quick start
+## Quick start (local)
 
-### Next.js variant
-
-```bash
-cd portal
-cp .env.example .env
-npm install
-npx prisma migrate dev --name init
-npm run db:seed
-npm run dev                # http://localhost:3000
-```
-
-### Spring Boot + React variant
+**Prereqs:** JDK 21+, Node 18+. Maven is bundled via `./mvnw`.
 
 ```bash
-# Terminal 1 — backend
+# Terminal 1 — backend (8081 avoids conflicts with Docker on 8080)
 cd reading-portal/backend
 ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 
@@ -70,38 +55,56 @@ npm install
 npm run dev                # http://localhost:5173
 ```
 
-Both variants ship with the same demo accounts: `teacher@demo.com / teacher123`, `alex@demo.com / student123`, `jordan@demo.com / student123`, `sam@demo.com / student123`.
+Vite proxies `/api/*` to the backend so cookies work without extra CORS setup in dev.
 
-## Deploying
+**Apple Silicon:** If `java` fails with a Rosetta error, use the ARM64 JDK in `.tools/` (from repo root):
 
-Free-tier recipes for both variants live in **[DEPLOY.md](./DEPLOY.md)**:
+```bash
+export JAVA_HOME="$(pwd)/.tools/jdk-21.0.7+6/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+cd reading-portal/backend
+./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+```
 
-- **Recipe A — Next.js → Vercel + Neon Postgres** (recommended for fastest demo; ~10 min, no cold starts)
-- **Recipe B — Spring Boot + React → Render + Vercel** (matches Scholastic's stated stack; ~15 min, Render free sleeps after 15 min idle)
+### Demo credentials (seeded on boot)
 
-Both cost $0.
+| Role    | Email              | Password     |
+| ------- | ------------------ | ------------ |
+| Teacher | teacher@demo.com   | teacher123   |
+| Student | alex@demo.com      | student123   |
+| Student | jordan@demo.com    | student123   |
+| Student | sam@demo.com       | student123   |
+
+## Deploying (free tier)
+
+See **[DEPLOY.md](./DEPLOY.md)** for the full walkthrough.
+
+| Piece | Host | Path / setting |
+| ----- | ---- | -------------- |
+| Backend | [Render](https://render.com) | Blueprint: `reading-portal/render.yaml` |
+| Frontend | [Vercel](https://vercel.com) | Root: `reading-portal/frontend`, env: `VITE_API_BASE` |
+| CORS | Render env | `PORTAL_CORS_ORIGINS` = your Vercel URL |
+
+## API overview
+
+| Method | Path | Who |
+| ------ | ---- | --- |
+| POST | `/api/auth/login` | anyone |
+| POST | `/api/auth/logout` | anyone |
+| GET | `/api/auth/me` | authed |
+| GET | `/api/health` | anyone |
+| GET | `/api/books` | authed |
+| GET | `/api/students` | teacher |
+| GET | `/api/assignments` | authed |
+| POST | `/api/assignments` | teacher |
+| GET | `/api/assignments/{id}` | owner student/teacher |
+| PATCH | `/api/assignments/{id}/status` | owner student |
+| POST | `/api/assignments/{id}/sessions` | owner student |
+
+More detail: [`reading-portal/README.md`](./reading-portal/README.md).
 
 ## Deliverables
 
-- **GitHub repository.** This repo (push from `/Users/emreyanmis/Documents/scholastic` per the steps in `DEPLOY.md`).
-- **Live deployed URL with credentials.** Whichever recipe you ran; demo accounts are seeded automatically.
-- **Written explanation.** Each variant's README covers what's implemented, key architectural decisions, tradeoffs/assumptions, and what to improve with more time.
-
-## API parity at a glance
-
-Both backends expose the same routes with the same wire format, so the same frontend code shape works either way:
-
-| Method | Path                                       | Who              |
-| ------ | ------------------------------------------ | ---------------- |
-| POST   | `/api/auth/login`                          | anyone           |
-| POST   | `/api/auth/logout`                         | anyone           |
-| GET    | `/api/auth/me`                             | authed           |
-| GET    | `/api/books`                               | authed           |
-| GET    | `/api/students`                            | teacher          |
-| GET    | `/api/assignments`                         | authed           |
-| POST   | `/api/assignments`                         | teacher          |
-| GET    | `/api/assignments/{id}`                    | owner stu/teach. |
-| PATCH  | `/api/assignments/{id}/status`             | owner student    |
-| POST   | `/api/assignments/{id}/sessions`           | owner student    |
-
-Errors come back as `{ "error": "..." }` with appropriate `401`/`403`/`400`/`404` status codes from both.
+- **GitHub:** https://github.com/Emreyanmis/scholastic-reading-portal
+- **Live URL + credentials:** frontend (Vercel) + backend (Render); demo accounts above
+- **Written explanation:** this README, [`reading-portal/README.md`](./reading-portal/README.md), [`DEPLOY.md`](./DEPLOY.md)
