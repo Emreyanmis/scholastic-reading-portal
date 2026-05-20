@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, AssignmentStatus, BookFull } from "../lib/api";
 import { formatDate, statusClasses, statusLabel } from "../lib/format";
 import { IconBook, IconCalendar, IconCheck, IconClock, IconPause, IconPlay, IconPlus } from "./icons";
+import { StatusSelect } from "./StatusSelect";
 
 // The reader has two purposes:
 //   1. Render the book content.
@@ -140,16 +141,12 @@ export function BookReader({
             </div>
             <div>
               <label className="label">Status</label>
-              <select
-                className="input mt-1.5 text-sm"
+              <StatusSelect
                 value={a.status}
-                onChange={(e) => updateStatus(e.target.value as AssignmentStatus)}
+                onChange={updateStatus}
                 disabled={busy}
-              >
-                <option value="NOT_STARTED">Not Started</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-              </select>
+                size="md"
+              />
             </div>
           </div>
         </div>

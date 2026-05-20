@@ -4,6 +4,7 @@ import { api, AssignmentDto, AssignmentStatus } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { daysUntil, formatDate, statusClasses, statusLabel } from "../lib/format";
 import { IconBook, IconCalendar, IconClock, IconPlay, IconCheck } from "../components/icons";
+import { StatusSelect } from "../components/StatusSelect";
 
 const READING_GOAL_MIN = 60; // simple visual target for the progress bar
 
@@ -180,16 +181,12 @@ function AssignmentCard({
           <Link to={`/student/assignments/${a.id}`} className="btn-primary text-sm">
             <IconPlay size={14} /> Open book
           </Link>
-          <select
-            className="input w-auto py-1.5 text-xs"
+          <StatusSelect
             value={a.status}
-            onChange={(e) => onStatusChange(a.id, e.target.value as AssignmentStatus)}
+            onChange={(s) => onStatusChange(a.id, s)}
+            size="sm"
             aria-label="Update status"
-          >
-            <option value="NOT_STARTED">Not Started</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
-          </select>
+          />
         </div>
       </div>
     </div>
