@@ -30,6 +30,6 @@ services:
       # Frontend origins allowed to send cookies. Add the Vercel URL here
       # AFTER the frontend has been deployed.
       - key: PORTAL_CORS_ORIGINS
-        value: "https://reading-portal-frontend.vercel.app"
+        value: "https://scholastic-reading-portal.vercel.app"
       - key: JAVA_TOOL_OPTIONS
         value: "-XX:MaxRAMPercentage=75"
