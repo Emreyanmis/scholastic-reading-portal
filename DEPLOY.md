@@ -42,15 +42,11 @@ curl https://reading-portal-backend.onrender.com/api/health
 1. [vercel.com/new](https://vercel.com/new) → import `scholastic-reading-portal`
 2. **Root directory:** `reading-portal/frontend`
 3. Framework: **Vite**
-4. **Environment variable:**
-
-| Name | Value |
-|------|--------|
-| `VITE_API_BASE` | `https://reading-portal-backend.onrender.com` (no trailing slash) |
+4. **Environment variables:** leave **`VITE_API_BASE` unset** (or delete it if you added it earlier). The app calls `/api/...` on the same Vercel host; `reading-portal/frontend/vercel.json` proxies those requests to Render so login cookies work (browsers often block third-party cookies when the UI talks directly to `*.onrender.com`).
 
 5. **Deploy** → copy your Vercel URL, e.g. `https://scholastic-reading-portal.vercel.app`
 
-If you already deployed with the wrong root, fix **Settings → Build and Deployment → Root Directory**, then **Redeploy**.
+If you already deployed with the wrong root or with `VITE_API_BASE` pointing at Render, fix **Root Directory**, remove that env var, then **Redeploy**.
 
 ---
 
@@ -60,7 +56,7 @@ If you already deployed with the wrong root, fix **Settings → Build and Deploy
 2. Set **`PORTAL_CORS_ORIGINS`** to your **exact** Vercel URL (with `https://`), e.g. `https://scholastic-reading-portal.vercel.app` — not `reading-portal-frontend.vercel.app` (that domain has no deployment)
 3. **Save** (Render redeploys ~1 min)
 
-Without this step, login from the browser will fail.
+Without this step, direct browser→Render calls can fail CORS. With the Vercel `/api` proxy (default), the browser only talks to your Vercel origin; CORS on Render is still useful for local prod-like testing with `VITE_API_BASE` set.
 
 ---
 
@@ -83,8 +79,8 @@ First request after ~15 min idle may take ~30s while Render wakes up.
                 │  React SPA  │──▶ │  Spring Boot + H2 (mem) │
                 │  (Vite)     │    │  SeedRunner on boot     │
                 └─────────────┘    └────────────────────────┘
-                 VITE_API_BASE        PORTAL_CORS_ORIGINS
-                 cookies: SameSite=None; Secure
+                 /api → Vercel proxy → Render
+                 session cookie on Vercel origin (first-party)
 ```
 
 ---

@@ -92,8 +92,7 @@ Local data: H2 file at `reading-portal/backend/data/portal.mv.db`. First boot ru
 
 Frontend on Vercel, API on Render (free tier). Walkthrough: **[DEPLOY.md](./DEPLOY.md)**.
 
-- Vercel root: `reading-portal/frontend`
-- Vercel env: `VITE_API_BASE=https://reading-portal-backend.onrender.com` (no trailing slash)
+- Vercel root: `reading-portal/frontend` — **do not** set `VITE_API_BASE` in prod; `/api` is proxied to Render via `vercel.json` so session cookies stay on your Vercel domain
 - Render: blueprint `reading-portal/render.yaml`, Docker context `reading-portal/backend`
 - Render env: `PORTAL_CORS_ORIGINS=https://scholastic-reading-portal.vercel.app`
 

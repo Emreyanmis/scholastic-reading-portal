@@ -1,6 +1,7 @@
 // Thin fetch wrapper that:
 //   1) Sends/receives cookies (credentials: "include")
-//   2) Routes through VITE_API_BASE if set (for prod), else relative (dev proxy)
+//   2) Uses relative /api paths in prod (Vercel rewrites → Render) so the session
+//      cookie stays first-party. Only set VITE_API_BASE for direct-to-Render dev.
 //   3) Parses JSON and surfaces server error messages as Error
 //
 // I deliberately did NOT pull in axios or react-query for a focused demo —
