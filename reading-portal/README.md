@@ -7,7 +7,7 @@ This is the Spring Boot + React variant of the project. Architecturally it's two
 ## Layout
 
 ```
-portal-java/
+reading-portal/
 ├── backend/        Spring Boot 3.3 + Spring Data JPA + H2 (file)
 │   ├── pom.xml
 │   ├── mvnw, mvnw.cmd, .mvn/wrapper/   (Maven wrapper — no Maven needed)

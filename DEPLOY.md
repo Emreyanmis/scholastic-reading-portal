@@ -6,7 +6,7 @@ free-tier deploy paths.
 | Variant | Path | Where it deploys to | Cost |
 | ------- | ---- | ------------------- | ---- |
 | Next.js full-stack | [`portal/`](./portal) | **Vercel** (frontend + API) + **Neon** (Postgres) | $0 |
-| Spring Boot + React | [`portal-java/`](./portal-java) | **Render** (backend) + **Vercel** (frontend) | $0 (Render free sleeps after 15 min idle) |
+| Spring Boot + React | [`reading-portal/`](./reading-portal) | **Render** (backend) + **Vercel** (frontend) | $0 (Render free sleeps after 15 min idle) |
 
 Pick whichever you want to demo. Step-by-step recipes below.
 
@@ -76,7 +76,7 @@ That's it. Total $0 forever — Vercel hobby tier + Neon free tier.
 
 1. Sign up at [render.com](https://render.com) (GitHub login works)
 2. New → **Blueprint** → connect this repo
-3. Render reads [`portal-java/render.yaml`](./portal-java/render.yaml) and provisions a `reading-portal-backend` web service from the Dockerfile
+3. Render reads [`reading-portal/render.yaml`](./reading-portal/render.yaml) and provisions a `reading-portal-backend` web service from the Dockerfile
 4. Render auto-generates `PORTAL_SESSION_SECRET`. You can leave `PORTAL_CORS_ORIGINS` as the placeholder for now — we'll update it after Vercel.
 5. Click **Apply**. First Docker build takes ~4 minutes. Render gives you a public URL like `https://reading-portal-backend.onrender.com`.
 
@@ -86,7 +86,7 @@ Verify with: `curl https://reading-portal-backend.onrender.com/api/health` → s
 
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import the same repo
-3. **Root directory:** set it to `portal-java/frontend`
+3. **Root directory:** set it to `reading-portal/frontend`
 4. Framework should auto-detect as **Vite**
 5. Environment Variables:
    - `VITE_API_BASE` — your Render backend URL **with no trailing slash**, e.g. `https://reading-portal-backend.onrender.com`
@@ -110,7 +110,7 @@ Open your Vercel URL. The free Render service may take ~30 seconds to wake up on
 ### About the "data resets on cold start" caveat
 
 Render's free tier doesn't include a persistent disk, so the Spring Boot backend
-runs H2 **in-memory** (see [`application-prod.yml`](./portal-java/backend/src/main/resources/application-prod.yml)).
+runs H2 **in-memory** (see [`application-prod.yml`](./reading-portal/backend/src/main/resources/application-prod.yml)).
 Demo data is recreated by the `SeedRunner` on every boot, which is fine for an
 interview demo — any new assignments a tester creates during a session will be
 preserved until the next cold start.

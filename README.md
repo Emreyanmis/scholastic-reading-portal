@@ -7,7 +7,7 @@ I shipped **two implementations** that share the same data model, the same API c
 | Variant | Path | Stack | Best for |
 | ------- | ---- | ----- | -------- |
 | **Next.js full-stack** | [`portal/`](./portal) | Next.js 14 (App Router) + TypeScript + Tailwind + Prisma + SQLite | Single deployable artifact, fastest path to a demo |
-| **Spring Boot + React** | [`portal-java/`](./portal-java) | Spring Boot 3.3 + JPA + H2 (backend) · Vite + React + TS + Tailwind (frontend) | Matches Scholastic's stated stack (Java backend + React frontend), two-service deployment |
+| **Spring Boot + React** | [`reading-portal/`](./reading-portal) | Spring Boot 3.3 + JPA + H2 (backend) · Vite + React + TS + Tailwind (frontend) | Matches Scholastic's stated stack (Java backend + React frontend), two-service deployment |
 
 Each variant has its own README with setup, decisions, tradeoffs, and what I'd improve with more time.
 
@@ -61,11 +61,11 @@ npm run dev                # http://localhost:3000
 
 ```bash
 # Terminal 1 — backend
-cd portal-java/backend
+cd reading-portal/backend
 ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 
 # Terminal 2 — frontend
-cd portal-java/frontend
+cd reading-portal/frontend
 npm install
 npm run dev                # http://localhost:5173
 ```

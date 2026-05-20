@@ -15,8 +15,8 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    dockerfilePath: ./portal-java/backend/Dockerfile
-    dockerContext: ./portal-java/backend
+    dockerfilePath: ./reading-portal/backend/Dockerfile
+    dockerContext: ./reading-portal/backend
     healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE

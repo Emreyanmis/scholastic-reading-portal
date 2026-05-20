@@ -4,6 +4,7 @@ import { useAuth } from "../lib/auth";
 import { ApiError } from "../lib/api";
 import { BookCover } from "../components/BookCover";
 import { IconSparkle } from "../components/icons";
+import { ScholasticLogo } from "../components/ScholasticLogo";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -67,10 +68,8 @@ export function LoginPage() {
       {/* Sign in card -------------------------------------------------- */}
       <section className="mx-auto w-full max-w-md">
         <div className="card-floaty p-7">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-grad text-white font-bold shadow-soft">
-              R
-            </div>
+          <div className="flex flex-col gap-3">
+            <ScholasticLogo className="h-10 w-auto max-w-[11rem]" />
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-stone-500">Reading Portal</div>
               <div className="display text-xl font-semibold text-stone-900">Welcome back</div>

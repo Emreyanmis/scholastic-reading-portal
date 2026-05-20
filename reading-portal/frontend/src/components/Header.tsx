@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { IconLogout } from "./icons";
+import { ScholasticLogo } from "./ScholasticLogo";
 
 function initials(name: string): string {
   return name
@@ -20,14 +21,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-stone-200/60 bg-white/70 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to={home} className="flex items-center gap-2.5 group">
-          <div className="relative grid h-9 w-9 place-items-center rounded-xl bg-brand-grad text-white font-bold shadow-soft transition-transform group-hover:rotate-[-4deg]">
-            R
-            <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-sunny-400 ring-2 ring-white"></div>
-          </div>
-          <div className="leading-tight">
+        <Link to={home} className="flex items-center gap-3 group">
+          <ScholasticLogo className="h-8 w-auto max-w-[8.5rem] shrink-0 transition-transform group-hover:scale-[1.02]" />
+          <div className="leading-tight border-l border-stone-200 pl-3">
             <div className="display text-base font-semibold text-stone-900">Reading Portal</div>
-            <div className="text-[10px] uppercase tracking-wider text-stone-500">by Scholastic</div>
+            <div className="text-[10px] uppercase tracking-wider text-stone-500">Assignments &amp; progress</div>
           </div>
         </Link>
 
