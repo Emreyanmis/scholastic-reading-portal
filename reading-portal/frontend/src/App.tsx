@@ -1,23 +1,34 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Header } from "./components/Header";
+import { PageSkeleton } from "./components/PageSkeleton";
 import { useAuth } from "./lib/auth";
 import { LoginPage } from "./pages/LoginPage";
-import { TeacherDashboardPage } from "./pages/TeacherDashboardPage";
-import { StudentDashboardPage } from "./pages/StudentDashboardPage";
-import { BookReaderPage } from "./pages/BookReaderPage";
 import type { Role } from "./lib/api";
 
+const TeacherDashboardPage = lazy(() =>
+  import("./pages/TeacherDashboardPage").then((m) => ({ default: m.TeacherDashboardPage }))
+);
+const StudentDashboardPage = lazy(() =>
+  import("./pages/StudentDashboardPage").then((m) => ({ default: m.StudentDashboardPage }))
+);
+const BookReaderPage = lazy(() =>
+  import("./pages/BookReaderPage").then((m) => ({ default: m.BookReaderPage }))
+);
+
 function RequireRole({ role, children }: { role: Role; children: JSX.Element }) {
-  const { user, loading } = useAuth();
+  const { user, sessionChecked } = useAuth();
   const location = useLocation();
-  if (loading) return <div className="p-8 text-stone-500">Loading…</div>;
+
+  if (!sessionChecked && !user) return <PageSkeleton />;
   if (!user) return <Navigate to="/" state={{ from: location }} replace />;
   if (user.role !== role) return <Navigate to={user.role === "TEACHER" ? "/teacher" : "/student"} replace />;
-  return children;
+
+  return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen">
@@ -27,9 +38,7 @@ export default function App() {
           <Route
             path="/"
             element={
-              loading ? (
-                <div className="p-8 text-stone-500">Loading…</div>
-              ) : user ? (
+              user ? (
                 <Navigate to={user.role === "TEACHER" ? "/teacher" : "/student"} replace />
               ) : (
                 <LoginPage />

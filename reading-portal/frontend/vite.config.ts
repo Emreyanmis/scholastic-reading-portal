@@ -9,6 +9,15 @@ export default defineConfig(({ mode }) => {
   const backend = env.VITE_DEV_BACKEND || "http://localhost:8081";
   return {
     plugins: [react()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom", "react-router-dom"],
+          },
+        },
+      },
+    },
     server: {
       port: 5173,
       proxy: {

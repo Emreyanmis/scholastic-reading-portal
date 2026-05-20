@@ -43,7 +43,7 @@ export default {
       fontFamily: {
         sans:    ["'Plus Jakarta Sans'", "ui-sans-serif", "system-ui", "sans-serif"],
         display: ["'Fraunces'", "'Plus Jakarta Sans'", "ui-serif", "Georgia", "serif"],
-        serif:   ["'Lora'", "ui-serif", "Georgia", "serif"],
+        serif:   ["Georgia", "ui-serif", "serif"],
       },
       boxShadow: {
         soft:  "0 2px 8px -2px rgba(15, 23, 42, 0.08), 0 4px 16px -4px rgba(15, 23, 42, 0.06)",

@@ -98,7 +98,7 @@ Frontend on Vercel, API on Render (free tier). Walkthrough: **[DEPLOY.md](./DEPL
 
 `reading-portal-frontend.vercel.app` is not wired to this project — use the scholastic URL above for CORS and for reviewers.
 
-Render sleeps after ~15 min idle; first hit after that can take ~30s. Prod uses in-memory H2, so demo data comes back from `SeedRunner` on cold start — assignments you create may disappear after a restart. Fine for the exercise; swap JDBC URL + disk or Postgres for real persistence.
+Render sleeps after ~15 min idle; the first API call after that can take ~20–30s. The login page renders immediately; dashboards lazy-load while the session is verified. Prod uses in-memory H2, so demo data comes back from `SeedRunner` on cold start — assignments you create may disappear after a restart. Fine for the exercise; swap JDBC URL + disk or Postgres for real persistence.
 
 ---
 
