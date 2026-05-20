@@ -107,6 +107,8 @@ Render sleeps after ~15 min idle; first hit after that can take ~30s. Prod uses 
 
 Split **API + SPA** so each can deploy on its own (Render + Vercel here). JSON REST in the middle.
 
+**One login, two dashboards.** Teachers and students share the same sign-in page (`LoginPage`); after `POST /api/auth/login` the API returns the user's role and the app routes to `/teacher` or `/student`. I didn't split into separate portals or URLs — same API, permissions from the account, not from which link you opened. For a district rollout I'd expect different entry URLs or SSO (Clever for students, staff SSO for teachers) while keeping one backend.
+
 **Sessions:** small `SessionService` (HMAC cookie) instead of pulling in full Spring Security for a time-boxed build. Passwords are BCrypt. Prod cookies are `HttpOnly`, `Secure`, `SameSite=None` so Vercel can talk to Render with credentials.
 
 **Auth in controllers:** `@AuthUser(requiredRole = …)` on parameters; `GlobalExceptionHandler` returns `{ "error": "…" }` for 401/403.
