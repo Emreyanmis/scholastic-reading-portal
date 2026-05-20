@@ -130,9 +130,9 @@ function AssignmentCard({
   const overdue = a.status !== "COMPLETED" && days < 0;
 
   return (
-    <div className="card group overflow-hidden transition-all hover:shadow-lift hover:-translate-y-0.5">
+    <div className="card group transition-all hover:shadow-lift hover:-translate-y-0.5">
       <div
-        className="relative h-32"
+        className="relative h-32 overflow-hidden rounded-t-2xl"
         style={{ background: `linear-gradient(135deg, ${a.book.coverColor} 0%, ${shadeColor(a.book.coverColor, -12)} 100%)` }}
       >
         <div className="absolute inset-0 bg-[radial-gradient(120%_60%_at_50%_-20%,rgba(255,255,255,0.7),transparent)]" />

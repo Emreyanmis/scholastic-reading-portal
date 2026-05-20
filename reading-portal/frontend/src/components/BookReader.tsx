@@ -120,9 +120,9 @@ export function BookReader({
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
       {/* Sidebar ------------------------------------------------------ */}
       <aside className="lg:col-span-1 space-y-4">
-        <div className="card overflow-hidden">
+        <div className="card">
           <div
-            className="relative h-44"
+            className="relative h-44 overflow-hidden rounded-t-2xl"
             style={{ background: `linear-gradient(135deg, ${book.coverColor} 0%, ${shade(book.coverColor, -14)} 100%)` }}
           >
             <div className="absolute inset-0 bg-[radial-gradient(120%_60%_at_50%_-10%,rgba(255,255,255,0.6),transparent)]" />
