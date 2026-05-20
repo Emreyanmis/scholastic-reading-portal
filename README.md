@@ -7,6 +7,12 @@ A lightweight Teacher Reading Assignment Portal. Teachers assign books to studen
 - **Live demo:** see [Deployment](#deployment) below
 - **Architecture notes:** [`reading-portal/README.md`](./reading-portal/README.md)
 
+## Portal preview
+
+Sign-in page (Scholastic branding, teacher/student dashboards behind auth):
+
+![Reading Portal login screen](./docs/portal-login.png)
+
 ## Requirements coverage
 
 Every functional item in the brief maps to a concrete piece of code:
