@@ -5,12 +5,6 @@ import { ApiError } from "../lib/api";
 import { BookCover } from "../components/BookCover";
 import { IconSparkle } from "../components/icons";
 
-const DEMO = [
-  { role: "Teacher", email: "teacher@demo.com", password: "teacher123" },
-  { role: "Student", email: "alex@demo.com",    password: "student123" },
-  { role: "Student", email: "jordan@demo.com",  password: "student123" },
-];
-
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -31,11 +25,6 @@ export function LoginPage() {
     } finally {
       setBusy(false);
     }
-  }
-
-  function fill(d: typeof DEMO[number]) {
-    setEmail(d.email);
-    setPassword(d.password);
   }
 
   return (
@@ -122,33 +111,6 @@ export function LoginPage() {
               {busy ? "Signing in…" : "Sign in"}
             </button>
           </form>
-
-          <div className="mt-6 rounded-xl border border-dashed border-stone-300 bg-cream-50 p-3">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                Demo accounts
-              </div>
-              <div className="text-[10px] text-stone-400">click to fill</div>
-            </div>
-            <div className="mt-2 grid gap-1.5">
-              {DEMO.map((d) => (
-                <button
-                  type="button"
-                  key={d.email}
-                  onClick={() => fill(d)}
-                  className="group flex items-center justify-between rounded-lg bg-white px-3 py-2 text-left text-xs ring-1 ring-stone-200 hover:ring-brand-300 hover:bg-brand-50/50 transition"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className={`badge ${d.role === "Teacher" ? "bg-ink-100 text-ink-700" : "bg-sunny-100 text-amber-700"}`}>
-                      {d.role}
-                    </span>
-                    <code className="text-stone-700">{d.email}</code>
-                  </span>
-                  <code className="text-stone-400 group-hover:text-stone-600">{d.password}</code>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
     </div>
