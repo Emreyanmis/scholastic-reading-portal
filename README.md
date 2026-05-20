@@ -1,90 +1,17 @@
 # Reading Portal — Scholastic Coding Challenge
 
-A lightweight Teacher Reading Assignment Portal. Teachers assign books to students with a due date and track progress; students open the assigned book in an in-app reader, log minutes read, and update their assignment status.
+Teachers pick a book and due date, assign one or more students, and see status plus minutes read. Students open the book in the app, log time (timer or manual), and update Not Started / In Progress / Completed.
 
-- **Stack:** Spring Boot 3.3 (Java 21) + React 18 (Vite, TypeScript, Tailwind)
-- **Repository:** https://github.com/Emreyanmis/scholastic-reading-portal
-- **Live demo:** see [Deployment](#deployment) below
-- **Architecture notes:** [`reading-portal/README.md`](./reading-portal/README.md)
+**Stack:** Spring Boot 3.3 (Java 21) + React 18 (Vite, TypeScript, Tailwind)  
+**Repo:** https://github.com/Emreyanmis/scholastic-reading-portal  
+**Live app:** https://scholastic-reading-portal.vercel.app  
+**API:** https://reading-portal-backend.onrender.com  
 
-## Portal preview
-
-Sign-in page (Scholastic branding, teacher/student dashboards behind auth):
+Deeper implementation notes: [`reading-portal/README.md`](./reading-portal/README.md)
 
 ![Reading Portal login screen](./docs/portal-login.png)
 
-## Requirements coverage
-
-Every functional item in the brief maps to a concrete piece of code:
-
-### Teacher
-| Requirement | Where |
-| ----------- | ----- |
-| View available books | `BookController#list` → `CreateAssignmentDialog` book picker |
-| Create assignment (book + due date) for student(s) | `AssignmentController#create` (POST `/api/assignments`, accepts multi-student `studentIds[]`) |
-| View created assignments, status, and minutes read | `TeacherDashboardPage` + `AssignmentsTable` |
-| View assignment status for students | Same table — student name, status badge, minutes read, due/overdue |
-
-### Student
-| Requirement | Where |
-| ----------- | ----- |
-| View assigned reading | `StudentDashboardPage` (only own assignments via `findAllByStudentId…`) |
-| Open / view the assigned book | `BookReaderPage` → `BookReader`; full book content via `GET /api/assignments/{id}` |
-| Track minutes read | `BookReader` Start/Stop timer + manual minute entry; `POST /api/assignments/{id}/sessions` |
-| Update assignment status | `PATCH /api/assignments/{id}/status` — status dropdown on card and inside reader |
-| Statuses Not Started / In Progress / Completed | `AssignmentStatus` enum end-to-end |
-
-### Cross-cutting
-- **Real authentication:** BCrypt password hashes + HMAC-signed cookie sessions (`SessionService`, `SessionFilter`)
-- **Role-gated API:** custom `@AuthUser` argument resolver returns `401` / `403` JSON; teachers can't update student status, students can't list students or create assignments
-- **Persistence:** JPA + H2 (file mode locally, in-memory on Render free tier); idempotent `SeedRunner`
-- **Validation:** Bean Validation on request DTOs (`@Email`, `@NotBlank`, `@Min`, `@Future` style checks); errors returned as `{ "error": "..." }`
-- **Materialized progress:** `Assignment.minutesRead` is bumped in the same transaction as inserting a `ReadingSession` row, so the teacher list query stays O(1) per assignment
-
-## Repository layout
-
-```
-scholastic-reading-portal/
-├── reading-portal/
-│   ├── backend/             Spring Boot API (JPA, H2, REST)
-│   │   └── src/main/java/com/scholastic/portal/
-│   │       ├── auth/         signed cookie sessions, request filter, @AuthUser
-│   │       ├── domain/       User, Book, Assignment, ReadingSession (+ enums)
-│   │       ├── repo/         Spring Data JPA repositories
-│   │       ├── web/          controllers, DTOs, exception handler
-│   │       └── seed/         idempotent demo-data runner
-│   ├── frontend/            React SPA (Vite + TS + Tailwind, Scholastic wordmark)
-│   ├── render.yaml          Render Blueprint (Docker)
-│   └── README.md            Architecture notes
-├── DEPLOY.md                Free-tier deploy steps (Render + Vercel)
-└── vercel.json              Optional Vercel monorepo config
-```
-
-## Quick start (local)
-
-**Prereqs:** JDK 21+, Node 18+ (Maven is bundled via `./mvnw`).
-
-```bash
-# Terminal 1 — backend (port 8081 avoids conflicts with Docker on 8080)
-cd reading-portal/backend
-./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
-
-# Terminal 2 — frontend
-cd reading-portal/frontend
-npm install
-npm run dev                # http://localhost:5173
-```
-
-Vite proxies `/api/*` to the backend, so login cookies work without CORS setup in dev.
-
-**Apple Silicon note.** If system `java` crashes with a Rosetta / code-signature error, use the ARM64 JDK that ships under `.tools/` (from the repo root):
-
-```bash
-export JAVA_HOME="$(pwd)/.tools/jdk-21.0.7+6/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
-```
-
-### Demo credentials (seeded on every boot)
+### Demo logins (seeded; not shown on the login page)
 
 | Role    | Email              | Password   |
 | ------- | ------------------ | ---------- |
@@ -93,79 +20,152 @@ export PATH="$JAVA_HOME/bin:$PATH"
 | Student | jordan@demo.com    | student123 |
 | Student | sam@demo.com       | student123 |
 
-Credentials are intentionally **not shown** on the login page — share them out of band.
+---
 
-## Deployment
+## Where things live in the repo
 
-Free-tier deploy: backend on **Render** (Docker), frontend on **Vercel** (static). Total cost: $0.
+```
+scholastic-reading-portal/
+├── reading-portal/
+│   ├── backend/          Spring Boot API
+│   ├── frontend/         React SPA
+│   └── render.yaml       Render blueprint
+├── DEPLOY.md             Render + Vercel steps
+└── vercel.json           optional Vercel monorepo hints
+```
 
-| Piece     | Service | Setting                                                |
-| --------- | ------- | ------------------------------------------------------ |
-| Backend   | Render  | Blueprint path: `reading-portal/render.yaml`           |
-| Frontend  | Vercel  | Root: `reading-portal/frontend`, env: `VITE_API_BASE`  |
-| CORS link | Render  | `PORTAL_CORS_ORIGINS` = your exact Vercel URL          |
+Backend packages under `com/scholastic/portal/`: `auth`, `domain`, `repo`, `web`, `seed`.
 
-Step-by-step in **[DEPLOY.md](./DEPLOY.md)**.
+---
 
-> Render free tier sleeps after 15 min idle; first request can take ~30s while the JVM cold-starts. H2 is in-memory in prod, so `SeedRunner` repopulates demo data on every cold start. Both behaviours are documented and easy to swap out for production (persistent disk or managed Postgres).
+## Brief → code (quick map)
 
-## Key architectural decisions
+**Teacher**
 
-- **Spring Boot + React, deployed as two services.** Mirrors how a real Scholastic system would be split: API and SPA are independent, can scale independently, and the wire contract is a stable JSON REST surface.
-- **Hand-rolled HMAC-signed cookie sessions (`SessionService`).** Real auth — BCrypt password hashes, signed sessions, constant-time signature comparison — without taking on Spring Security's full config burden for a 4-hour exercise. Cookies are `HttpOnly`, `SameSite=Lax` locally / `None+Secure` in prod for cross-site Vercel↔Render.
-- **`@AuthUser` argument resolver for authorization.** Controllers declare the required role on the parameter (`@AuthUser(requiredRole = Role.TEACHER, any = false)`), and a single `GlobalExceptionHandler` returns consistent `{ "error": "…" }` JSON. No imperative `if (user.role != …) return 403` scattered around.
-- **`open-in-view: false` + `@EntityGraph`.** Disabled the Hibernate OSIV anti-pattern; list queries explicitly fetch the relations the API serializes. Kills N+1 problems and prevents `LazyInitializationException` after the transaction closes.
-- **Materialized `minutesRead` + append-only `ReadingSession`.** Each session log atomically increments the totaliser on `Assignment` and writes an audit row. The teacher dashboard renders without an aggregate query; per-day charts and rollbacks are a thin layer on top of the event table.
-- **Permissive status state machine.** Logging minutes auto-advances `NOT_STARTED → IN_PROGRESS`, and completing stamps `completedAt`, but students can freely move between states. Real student flows aren't linear (kids reset to "Not Started" when re-reading, etc.).
+| Requirement | Implementation |
+| ----------- | -------------- |
+| Book list | `BookController`, picker in `CreateAssignmentDialog` |
+| Create assignment (book, due date, multiple students) | `POST /api/assignments` with `studentIds[]` |
+| See assignments, status, minutes | `TeacherDashboardPage`, `AssignmentsTable` |
 
-More detail in [`reading-portal/README.md`](./reading-portal/README.md).
+**Student**
 
-## Assumptions
+| Requirement | Implementation |
+| ----------- | -------------- |
+| My assignments | `StudentDashboardPage` (scoped to logged-in student) |
+| Read the book | `BookReader` + `GET /api/assignments/{id}` (full text in response) |
+| Log minutes | Timer + manual entry → `POST /api/assignments/{id}/sessions` |
+| Change status | `PATCH /api/assignments/{id}/status` |
 
-Things the brief intentionally left open and how I resolved them:
+Also: BCrypt passwords, signed `rp_session` cookie, `@AuthUser` for role checks, JPA on H2, validation on request DTOs. `minutesRead` on the assignment is updated in the same transaction as each `ReadingSession` row so the teacher list doesn't need a sum query.
 
-1. **User identity.** Email/password sign-in, no signup flow — accounts are seeded. A real Scholastic deployment would use district SSO (Clever, Google Classroom). Sessions are HMAC-signed cookies, 7-day expiry.
-2. **Books are global.** All teachers see the same catalog; no per-teacher / per-school book collection. Books have full inline content (short stories), so the in-app reader actually has something to render.
-3. **Assignment uniqueness.** No uniqueness constraint on `(student, book)` — teachers can re-assign the same book deliberately (re-reads, summer review).
-4. **Multi-student assignment.** "Create an assignment for student(s)" is interpreted as: one dialog → one book + one due date → N rows inserted, one per selected student.
-5. **Minutes are self-reported.** No anti-cheat — log time via Start/Stop timer or manual entry. Logging a session auto-flips `NOT_STARTED → IN_PROGRESS`.
-6. **Status transitions are not locked.** A student can move freely between Not Started / In Progress / Completed. Reasoning above.
-7. **No "classes" / rosters.** Teachers see *all* students for the demo. Adding `ClassRoom` with many-to-many membership is documented as a next step.
-8. **Demo data persistence.** Local: H2 file mode survives restarts. Render free tier: H2 in-memory (no persistent disk on free); `SeedRunner` recreates demo data on cold start. Swappable for managed Postgres without code changes (just the JDBC URL + driver dep).
+---
 
-## API overview
+## Run locally
 
-All routes return JSON. Errors come back as `{ "error": "..." }` with appropriate `400` / `401` / `403` / `404`.
+JDK 21+, Node 18+. Maven wrapper is in `backend/`.
 
-| Method | Path                              | Who                   |
-| ------ | --------------------------------- | --------------------- |
-| POST   | `/api/auth/login`                 | anyone                |
-| POST   | `/api/auth/logout`                | anyone                |
-| GET    | `/api/auth/me`                    | authed                |
-| GET    | `/api/health`                     | anyone (Render probe) |
-| GET    | `/api/books`                      | authed                |
-| GET    | `/api/students`                   | teacher               |
-| GET    | `/api/assignments`                | authed (teacher: created; student: received) |
-| POST   | `/api/assignments`                | teacher               |
-| GET    | `/api/assignments/{id}`           | owning teacher or student |
-| PATCH  | `/api/assignments/{id}/status`    | owning student        |
-| POST   | `/api/assignments/{id}/sessions`  | owning student        |
+```bash
+# backend (8081 — 8080 is often taken by Docker on a Mac)
+cd reading-portal/backend
+./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 
-## What I'd improve with more time
+# frontend
+cd reading-portal/frontend
+npm install && npm run dev   # http://localhost:5173
+```
 
-1. **Tests.** Backend: `@DataJpaTest` for repos, `@WebMvcTest` for controllers (with a `SessionFilter` test slice), one or two `@SpringBootTest` happy-path flows. Frontend: Vitest for the API/auth wrappers, Playwright for "teacher creates → student logs time → teacher sees updated minutes".
-2. **Spring Security / district SSO.** Email/password is right for a demo. For a real deployment swap to Clever / Google Classroom / SAML, keep the cookie shape.
-3. **Classes & rosters.** A `ClassRoom` entity with many-to-many membership so teachers only see their own students. Assignments scoped to a class.
-4. **Server-side pagination, filtering, sort.** On the teacher view: sort by student name / due / status, filter by status, paginate large rosters.
-5. **Per-session reporting.** `ReadingSession` is already an event log; surface a minutes-per-day chart per assignment and class.
-6. **Schema migrations.** Replace `ddl-auto: update` with Flyway/Liquibase before anything close to production.
-7. **Optimistic UI + toasts.** Status changes and timer saves currently wait for the round trip; small UX win.
-8. **CI.** GitHub Actions running `./mvnw verify` and `npm run build && npm test` on every PR.
-9. **Audit log / soft delete** on assignments so teachers have a paper trail.
-10. **A11y pass.** Focus management on the dialog, screen-reader labels on the timer.
+Vite proxies `/api` to the backend so cookies work without CORS in dev.
 
-## Deliverables checklist
+If `java` crashes on Apple Silicon (Rosetta / signature issues), from repo root:
 
-- [x] **GitHub repository** with clear README — this repo
-- [x] **Live deployed URL with credentials** — Vercel (frontend) + Render (backend); demo credentials above
-- [x] **Written explanation** — implementation, architectural decisions, tradeoffs, assumptions, future work all covered above and in [`reading-portal/README.md`](./reading-portal/README.md)
+```bash
+export JAVA_HOME="$(pwd)/.tools/jdk-21.0.7+6/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Local data: H2 file at `reading-portal/backend/data/portal.mv.db`. First boot runs `SeedRunner` for demo users/books.
+
+---
+
+## Deployed setup
+
+Frontend on Vercel, API on Render (free tier). Walkthrough: **[DEPLOY.md](./DEPLOY.md)**.
+
+- Vercel root: `reading-portal/frontend`
+- Vercel env: `VITE_API_BASE=https://reading-portal-backend.onrender.com` (no trailing slash)
+- Render: blueprint `reading-portal/render.yaml`, Docker context `reading-portal/backend`
+- Render env: `PORTAL_CORS_ORIGINS=https://scholastic-reading-portal.vercel.app`
+
+`reading-portal-frontend.vercel.app` is not wired to this project — use the scholastic URL above for CORS and for reviewers.
+
+Render sleeps after ~15 min idle; first hit after that can take ~30s. Prod uses in-memory H2, so demo data comes back from `SeedRunner` on cold start — assignments you create may disappear after a restart. Fine for the exercise; swap JDBC URL + disk or Postgres for real persistence.
+
+---
+
+## Design choices (short version)
+
+Split **API + SPA** so each can deploy on its own (Render + Vercel here). JSON REST in the middle.
+
+**Sessions:** small `SessionService` (HMAC cookie) instead of pulling in full Spring Security for a time-boxed build. Passwords are BCrypt. Prod cookies are `HttpOnly`, `Secure`, `SameSite=None` so Vercel can talk to Render with credentials.
+
+**Auth in controllers:** `@AuthUser(requiredRole = …)` on parameters; `GlobalExceptionHandler` returns `{ "error": "…" }` for 401/403.
+
+**Queries:** `open-in-view: false`, `@EntityGraph` on list endpoints to avoid N+1 and lazy-load surprises after the transaction ends.
+
+**Minutes:** total on `Assignment` plus a `ReadingSession` row per log — easy teacher view, room for charts later.
+
+**Status:** students can move between all three states; logging time bumps Not Started → In Progress when relevant. Didn't hard-lock a state machine.
+
+---
+
+## Assumptions I made
+
+- Seeded accounts only — no signup. Production would likely be district SSO.
+- One shared book catalog for all teachers.
+- Same book can be assigned to the same student more than once.
+- One create flow → one row per selected student (same book + due date).
+- Minutes are self-reported (timer or typed).
+- No classes/rosters — teacher sees every seeded student.
+- Render free tier = ephemeral DB; local dev keeps a file.
+
+---
+
+## API
+
+JSON everywhere. Errors: `{ "error": "message" }`.
+
+| Method | Path | Who |
+| ------ | ---- | --- |
+| POST | `/api/auth/login` | — |
+| POST | `/api/auth/logout` | — |
+| GET | `/api/auth/me` | logged in |
+| GET | `/api/health` | — (Render health check) |
+| GET | `/api/books` | logged in |
+| GET | `/api/students` | teacher |
+| GET | `/api/assignments` | teacher: created; student: mine |
+| POST | `/api/assignments` | teacher |
+| GET | `/api/assignments/{id}` | teacher or assigned student |
+| PATCH | `/api/assignments/{id}/status` | student |
+| POST | `/api/assignments/{id}/sessions` | student |
+
+---
+
+## If I had more time
+
+- Persistent DB — managed Postgres (or a Render disk + H2 file) so assignments survive redeploys and cold starts; prod is in-memory H2 on the free tier right now
+- Tests (`@WebMvcTest`, a couple integration paths, Vitest / Playwright smoke flow)
+- Spring Security or Clever/Google SSO
+- Classes so teachers only see their roster
+- Pagination and filters on the teacher table
+- Charts from `ReadingSession` rows
+- Flyway instead of `ddl-auto: update`
+- CI on PRs
+
+---
+
+## Submission
+
+- GitHub: link above  
+- Live: https://scholastic-reading-portal.vercel.app — credentials in the table at the top  
+- Write-up: this file + [`reading-portal/README.md`](./reading-portal/README.md)

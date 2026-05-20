@@ -57,7 +57,7 @@ If you already deployed with the wrong root, fix **Settings → Build and Deploy
 ## 3. Connect frontend ↔ backend (~1 minute)
 
 1. Render → `reading-portal-backend` → **Environment**
-2. Set **`PORTAL_CORS_ORIGINS`** to your **exact** Vercel URL (with `https://`)
+2. Set **`PORTAL_CORS_ORIGINS`** to your **exact** Vercel URL (with `https://`), e.g. `https://scholastic-reading-portal.vercel.app` — not `reading-portal-frontend.vercel.app` (that domain has no deployment)
 3. **Save** (Render redeploys ~1 min)
 
 Without this step, login from the browser will fail.
@@ -66,7 +66,7 @@ Without this step, login from the browser will fail.
 
 ## 4. Sign in
 
-Open your **Vercel** URL (not Render).
+Open your **Vercel** URL (not Render), e.g. https://scholastic-reading-portal.vercel.app
 
 - Teacher: `teacher@demo.com` / `teacher123`
 - Student: `alex@demo.com` / `student123`
