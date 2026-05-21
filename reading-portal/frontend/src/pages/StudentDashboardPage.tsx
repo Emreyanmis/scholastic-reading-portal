@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, AssignmentDto, AssignmentStatus } from "../lib/api";
+import { api, AssignmentDto, AssignmentStatus, DATA_LOAD_OPTS, loadErrorMessage, MUTATION_OPTS } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { daysUntil, formatDate, statusClasses, statusLabel } from "../lib/format";
 import { IconBook, IconCalendar, IconClock, IconPlay, IconCheck } from "../components/icons";
@@ -16,19 +16,23 @@ export function StudentDashboardPage() {
   useEffect(() => {
     (async () => {
       try {
-        setAssignments(await api.get<AssignmentDto[]>("/api/assignments"));
+        setAssignments(await api.get<AssignmentDto[]>("/api/assignments", DATA_LOAD_OPTS));
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load");
+        setError(loadErrorMessage(e));
       }
     })();
   }, []);
 
   async function updateStatus(id: string, status: AssignmentStatus) {
     try {
-      const updated = await api.patch<AssignmentDto>(`/api/assignments/${id}/status`, { status });
+      const updated = await api.patch<AssignmentDto>(
+        `/api/assignments/${id}/status`,
+        { status },
+        MUTATION_OPTS
+      );
       setAssignments((prev) => prev?.map((a) => (a.id === id ? { ...a, ...updated } : a)) ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to update");
+      setError(loadErrorMessage(e, "Failed to update"));
     }
   }
 

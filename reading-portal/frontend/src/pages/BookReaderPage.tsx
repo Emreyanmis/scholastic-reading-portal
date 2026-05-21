@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, AssignmentStatus, BookFull, StudentDto, TeacherSummary } from "../lib/api";
+import { api, AssignmentStatus, BookFull, DATA_LOAD_OPTS, loadErrorMessage, StudentDto, TeacherSummary } from "../lib/api";
 import { BookReader } from "../components/BookReader";
+import { PageSkeleton } from "../components/PageSkeleton";
 import { IconArrowLeft } from "../components/icons";
 
 type AssignmentDetail = {
@@ -24,9 +25,9 @@ export function BookReaderPage() {
     if (!id) return;
     (async () => {
       try {
-        setDetail(await api.get<AssignmentDetail>(`/api/assignments/${id}`));
+        setDetail(await api.get<AssignmentDetail>(`/api/assignments/${id}`, DATA_LOAD_OPTS));
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load");
+        setError(loadErrorMessage(e));
       }
     })();
   }, [id]);
@@ -39,7 +40,14 @@ export function BookReaderPage() {
       </div>
     );
   }
-  if (!detail) return <div className="text-stone-500">Loading…</div>;
+  if (!detail) {
+    return (
+      <div className="space-y-4">
+        <BackLink />
+        <PageSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 animate-fade-in">

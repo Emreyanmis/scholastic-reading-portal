@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { api, AssignmentDto, BookSummary, StudentDto } from "../lib/api";
+import { api, AssignmentDto, BookSummary, loadErrorMessage, MUTATION_OPTS, StudentDto } from "../lib/api";
 import { BookCover } from "./BookCover";
 import { IconCalendar, IconCheck, IconPlus, IconUsers } from "./icons";
 
@@ -73,11 +73,12 @@ export function CreateAssignmentDialog({
     try {
       const res = await api.post<{ created: number; assignments: AssignmentDto[] }>(
         "/api/assignments",
-        { bookId, studentIds, dueDate: new Date(dueDate).toISOString() }
+        { bookId, studentIds, dueDate: new Date(dueDate).toISOString() },
+        MUTATION_OPTS
       );
       onCreated(res.assignments);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed");
+      setError(loadErrorMessage(err, "Failed"));
     } finally {
       setBusy(false);
     }

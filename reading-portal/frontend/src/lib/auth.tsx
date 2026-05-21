@@ -1,7 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState, useCallback } from "react";
-import { ApiError, api, COLD_START_TIMEOUT_MS, UserDto, wakeBackend } from "./api";
-
-const SESSION_OPTS = { timeoutMs: COLD_START_TIMEOUT_MS, retries: 2 } as const;
+import { ApiError, api, SESSION_OPTS, UserDto, wakeBackend } from "./api";
 
 type AuthState = {
   user: UserDto | null;

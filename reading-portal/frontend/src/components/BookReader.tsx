@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, AssignmentStatus, BookFull } from "../lib/api";
+import { api, AssignmentStatus, BookFull, loadErrorMessage, MUTATION_OPTS } from "../lib/api";
 import { formatDate, statusClasses, statusLabel } from "../lib/format";
 import { IconBook, IconCalendar, IconCheck, IconClock, IconPause, IconPlay, IconPlus } from "./icons";
 import { StatusSelect } from "./StatusSelect";
@@ -89,11 +89,15 @@ export function BookReader({
     if (minutes <= 0) return;
     setBusy(true);
     try {
-      const updated = await api.post<AssignmentSummary>(`/api/assignments/${a.id}/sessions`, { minutes });
+      const updated = await api.post<AssignmentSummary>(
+        `/api/assignments/${a.id}/sessions`,
+        { minutes },
+        MUTATION_OPTS
+      );
       patch({ status: updated.status, minutesRead: updated.minutesRead });
       setJustLogged(minutes);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save time");
+      setError(loadErrorMessage(e, "Could not save time"));
     } finally {
       setBusy(false);
     }
@@ -103,10 +107,14 @@ export function BookReader({
     setError(null);
     setBusy(true);
     try {
-      const updated = await api.patch<AssignmentSummary>(`/api/assignments/${a.id}/status`, { status });
+      const updated = await api.patch<AssignmentSummary>(
+        `/api/assignments/${a.id}/status`,
+        { status },
+        MUTATION_OPTS
+      );
       patch({ status: updated.status, completedAt: updated.completedAt });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not update status");
+      setError(loadErrorMessage(e, "Could not update status"));
     } finally {
       setBusy(false);
     }

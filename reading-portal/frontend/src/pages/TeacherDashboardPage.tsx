@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api, AssignmentDto, AssignmentStatus, BookSummary, StudentDto } from "../lib/api";
+import { api, AssignmentDto, AssignmentStatus, BookSummary, DATA_LOAD_OPTS, loadErrorMessage, StudentDto } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { AssignmentsTable } from "../components/AssignmentsTable";
 import { CreateAssignmentDialog } from "../components/CreateAssignmentDialog";
@@ -20,15 +20,15 @@ export function TeacherDashboardPage() {
     (async () => {
       try {
         const [a, b, s] = await Promise.all([
-          api.get<AssignmentDto[]>("/api/assignments"),
-          api.get<BookSummary[]>("/api/books"),
-          api.get<StudentDto[]>("/api/students"),
+          api.get<AssignmentDto[]>("/api/assignments", DATA_LOAD_OPTS),
+          api.get<BookSummary[]>("/api/books", DATA_LOAD_OPTS),
+          api.get<StudentDto[]>("/api/students", DATA_LOAD_OPTS),
         ]);
         setAssignments(a);
         setBooks(b);
         setStudents(s);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load");
+        setError(loadErrorMessage(e));
       }
     })();
   }, []);

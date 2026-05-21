@@ -29,6 +29,23 @@ export function isTimeoutError(e: unknown): boolean {
   return e instanceof ApiError && e.status === 0;
 }
 
+/** Auth/session calls on a cold Render instance. */
+export const SESSION_OPTS = { timeoutMs: COLD_START_TIMEOUT_MS, retries: 2 } as const;
+
+/** Initial dashboard / reader loads after login (students and teachers). */
+export const DATA_LOAD_OPTS = SESSION_OPTS;
+
+/** Writes while the backend may still be waking (timer logs, status updates). */
+export const MUTATION_OPTS = { timeoutMs: 60_000, retries: 2 } as const;
+
+export function loadErrorMessage(e: unknown, fallback = "Failed to load"): string {
+  if (isTimeoutError(e)) {
+    return "Server is still starting (free hosting). Wait ~30 seconds, then refresh the page.";
+  }
+  if (e instanceof ApiError) return e.message;
+  return e instanceof Error ? e.message : fallback;
+}
+
 /** Best-effort ping so the first real API call is less likely to time out. */
 export async function wakeBackend(): Promise<void> {
   for (let attempt = 0; attempt < 4; attempt++) {
