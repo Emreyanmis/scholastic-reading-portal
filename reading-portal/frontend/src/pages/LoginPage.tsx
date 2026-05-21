@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
-import { ApiError } from "../lib/api";
+import { ApiError, isTimeoutError } from "../lib/api";
 import { BookCover } from "../components/BookCover";
 import { IconEye, IconEyeOff, IconSparkle } from "../components/icons";
 import { ScholasticLogo } from "../components/ScholasticLogo";
@@ -14,18 +14,25 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [waking, setWaking] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
+    setWaking(true);
     try {
       const me = await login(email, password);
       navigate(me.role === "TEACHER" ? "/teacher" : "/student", { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Login failed");
+      if (isTimeoutError(err)) {
+        setError("The server is still starting (free hosting). Wait ~30 seconds, then click Sign in again.");
+      } else {
+        setError(err instanceof ApiError ? err.message : "Login failed");
+      }
     } finally {
       setBusy(false);
+      setWaking(false);
     }
   }
 
@@ -118,8 +125,13 @@ export function LoginPage() {
               </div>
             )}
             <button type="submit" className="btn-primary w-full py-2.5" disabled={busy}>
-              {busy ? "Signing in…" : "Sign in"}
+              {waking ? "Starting server…" : busy ? "Signing in…" : "Sign in"}
             </button>
+            {waking && (
+              <p className="text-center text-xs text-stone-500">
+                First visit after idle can take up to a minute on free hosting.
+              </p>
+            )}
           </form>
         </div>
       </section>

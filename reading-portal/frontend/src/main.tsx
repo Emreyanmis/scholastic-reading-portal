@@ -5,14 +5,13 @@ import App from "./App";
 import { AuthProvider } from "./lib/auth";
 import "./index.css";
 
-// Warm the Render backend during idle time so the first real API call is faster.
-function pingBackend() {
-  fetch("/api/health", { credentials: "include" }).catch(() => {});
-}
+import { wakeBackend } from "./lib/api";
+
+// Start waking Render as soon as the app loads (non-blocking).
 if (typeof requestIdleCallback === "function") {
-  requestIdleCallback(pingBackend, { timeout: 2500 });
+  requestIdleCallback(() => wakeBackend().catch(() => {}), { timeout: 500 });
 } else {
-  setTimeout(pingBackend, 1500);
+  setTimeout(() => wakeBackend().catch(() => {}), 500);
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

@@ -1,7 +1,8 @@
 import { createContext, ReactNode, useContext, useEffect, useState, useCallback } from "react";
-import { ApiError, api, UserDto } from "./api";
+import { ApiError, api, COLD_START_TIMEOUT_MS, UserDto, wakeBackend } from "./api";
 
 const USER_HINT_KEY = "rp_user_hint";
+const SESSION_OPTS = { timeoutMs: COLD_START_TIMEOUT_MS, retries: 2 } as const;
 
 function readUserHint(): UserDto | null {
   try {
@@ -26,9 +27,7 @@ function writeUserHint(user: UserDto | null) {
 
 type AuthState = {
   user: UserDto | null;
-  /** False until the initial /api/auth/me round-trip finishes (or times out). */
   sessionChecked: boolean;
-  /** @deprecated Use sessionChecked — kept for existing call sites. */
   loading: boolean;
   login: (email: string, password: string) => Promise<UserDto>;
   logout: () => Promise<void>;
@@ -44,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const me = await api.get<UserDto>("/api/auth/me", { timeoutMs: 8_000 });
+        const me = await api.get<UserDto>("/api/auth/me", SESSION_OPTS);
         if (!cancelled) {
           setUser(me);
           writeUserHint(me);
@@ -54,10 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (e instanceof ApiError && e.status === 401) {
             setUser(null);
             writeUserHint(null);
-          } else {
-            // Timeout / cold start — don't block the UI; keep cached hint if any.
-            console.warn("Session check failed:", e);
           }
+          // Timeouts / cold start: stay on login, no UI error (background check only).
         }
       } finally {
         if (!cancelled) setSessionChecked(true);
@@ -69,7 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const u = await api.post<UserDto>("/api/auth/login", { email, password });
+    await wakeBackend();
+    const u = await api.post<UserDto>(
+      "/api/auth/login",
+      { email, password },
+      SESSION_OPTS
+    );
     setUser(u);
     writeUserHint(u);
     setSessionChecked(true);

@@ -16,16 +16,38 @@ export class ApiError extends Error {
   }
 }
 
-type RequestOpts = { timeoutMs?: number };
+/** Render free tier can take 30–60s to cold-start; auth calls need patience. */
+export const COLD_START_TIMEOUT_MS = 90_000;
 
-async function request<T>(
+type RequestOpts = { timeoutMs?: number; retries?: number };
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function isTimeoutError(e: unknown): boolean {
+  return e instanceof ApiError && e.status === 0;
+}
+
+/** Best-effort ping so the first real API call is less likely to time out. */
+export async function wakeBackend(): Promise<void> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      await requestOnce("GET", "/api/health", undefined, COLD_START_TIMEOUT_MS);
+      return;
+    } catch {
+      if (attempt < 3) await delay(1500 * (attempt + 1));
+    }
+  }
+}
+
+async function requestOnce<T>(
   method: "GET" | "POST" | "PATCH" | "DELETE",
   path: string,
-  body?: unknown,
-  opts?: RequestOpts
+  body: unknown | undefined,
+  timeoutMs: number
 ): Promise<T> {
   const controller = new AbortController();
-  const timeoutMs = opts?.timeoutMs ?? 30_000;
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
 
   let res: Response;
@@ -39,7 +61,7 @@ async function request<T>(
     });
   } catch (e) {
     if (e instanceof DOMException && e.name === "AbortError") {
-      throw new ApiError("Request timed out — the server may be waking up. Try again.", 0);
+      throw new ApiError("Server is waking up — please wait a moment and try again.", 0);
     }
     throw e;
   } finally {
@@ -62,6 +84,29 @@ async function request<T>(
     throw new ApiError(message, res.status);
   }
   return data as T;
+}
+
+async function request<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  path: string,
+  body?: unknown,
+  opts?: RequestOpts
+): Promise<T> {
+  const timeoutMs = opts?.timeoutMs ?? 30_000;
+  const retries = opts?.retries ?? 0;
+  let last: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await requestOnce<T>(method, path, body, timeoutMs);
+    } catch (e) {
+      last = e;
+      const retryable = isTimeoutError(e) || (e instanceof ApiError && e.status >= 502);
+      if (!retryable || attempt === retries) throw e;
+      await delay(2000);
+    }
+  }
+  throw last;
 }
 
 export const api = {
