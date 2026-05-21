@@ -17,7 +17,7 @@ export class ApiError extends Error {
 }
 
 /** Render free tier can take 30–60s to cold-start; auth calls need patience. */
-export const COLD_START_TIMEOUT_MS = 90_000;
+export const COLD_START_TIMEOUT_MS = 120_000;
 
 type RequestOpts = { timeoutMs?: number; retries?: number };
 
